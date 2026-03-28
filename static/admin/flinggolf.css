@@ -1,0 +1,247 @@
+/* =========================
+   FlingGolf Admin Theme B
+   Navy + Teal (global)
+========================= */
+
+:root{
+  --bg:#020617;
+  --panel:#071428;
+  --panel2:#0b1f3a;
+  --border:#1e3355;
+  --text:#e6edf7;
+  --muted:#9db0c9;
+  --accent:#22d3ee;     /* teal */
+  --accent2:#0891b2;    /* teal hover */
+  --link:#38bdf8;
+}
+
+/* Background everywhere */
+html body,
+html body #container,
+html body #content,
+html body #content-main,
+html body .dashboard #content,
+html body .change-form #content,
+html body .change-list #content {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+/* Header */
+html body #header{
+  background: var(--bg) !important;
+  border-bottom: 3px solid var(--accent) !important;
+}
+html body #site-name a{
+  color: var(--accent) !important;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  text-decoration: none !important;
+}
+html body #site-name a:hover{ color: #67e8f9 !important; }
+
+/* Breadcrumbs */
+html body div.breadcrumbs{
+  background: rgba(7,20,40,0.95) !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--muted) !important;
+}
+html body div.breadcrumbs a{ color: var(--link) !important; }
+
+/* Sidebar nav */
+html body #nav-sidebar{
+  background: rgba(7,20,40,0.9) !important;
+  border-right: 1px solid var(--border) !important;
+}
+html body #nav-sidebar a{ color: var(--text) !important; }
+html body #nav-sidebar a:hover{ color: var(--accent) !important; }
+html body #nav-sidebar .current-app > a,
+html body #nav-sidebar .current-model > a{
+  color: var(--accent) !important;
+  font-weight: 700;
+}
+
+/* Panels / cards */
+html body .module,
+html body .inline-group,
+html body fieldset.module,
+html body .submit-row,
+html body .results,
+html body #content-related,
+html body #changelist-filter{
+  background: rgba(11,31,58,0.85) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45) !important;
+}
+
+/* Panel headings */
+html body .module h2,
+html body .module caption,
+html body .inline-group h2,
+html body fieldset.module h2,
+html body #content-related h2,
+html body #changelist-filter h2,
+html body #changelist-filter h3{
+  background: rgba(7,20,40,0.85) !important;
+  color: var(--accent) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* Changelist table */
+html body #result_list{
+  background: transparent !important;
+}
+html body #result_list thead th{
+  background: rgba(7,20,40,0.9) !important;
+  color: var(--text) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+html body #result_list td,
+html body #result_list th{
+  color: var(--text) !important;
+  border-top: 1px solid var(--border) !important;
+}
+html body #result_list tbody tr:hover{
+  background: rgba(30,51,85,0.55) !important;
+}
+
+/* Links */
+html body a{ color: var(--link) !important; }
+html body a:hover{ color: var(--accent) !important; }
+
+/* Forms */
+html body input,
+html body select,
+html body textarea{
+  background: rgba(7,20,40,0.7) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+}
+html body input:focus,
+html body select:focus,
+html body textarea:focus{
+  outline: none !important;
+  border-color: rgba(34,211,238,0.85) !important;
+  box-shadow: 0 0 0 3px rgba(34,211,238,0.18) !important;
+}
+
+/* Buttons + object tools */
+html body .button,
+html body input[type=submit],
+html body input[type=button],
+html body .submit-row input,
+html body .object-tools a{
+  background: var(--accent) !important;
+  border: 1px solid var(--accent2) !important;
+  color: #041018 !important;
+  font-weight: 800 !important;
+  border-radius: 10px !important;
+}
+html body .button:hover,
+html body input[type=submit]:hover,
+html body .object-tools a:hover{
+  background: var(--accent2) !important;
+  border-color: var(--accent2) !important;
+  color: #021017 !important;
+}
+
+/* Messages */
+html body .messagelist li.success{
+  background: rgba(34,211,238,0.14) !important;
+  border: 1px solid rgba(34,211,238,0.30) !important;
+  color: var(--text) !important;
+}
+html body .messagelist li.error{
+  background: rgba(239,68,68,0.12) !important;
+  border: 1px solid rgba(239,68,68,0.35) !important;
+  color: var(--text) !important;
+}
+
+/* Footer */
+html body #footer{ color: var(--muted) !important; }
+
+/* Stop “auto dark-mode” fighting the palette */
+html body { color-scheme: dark; }
+/* =========================
+   DASHBOARD WHITE ROW FIX
+========================= */
+
+/* App list table background */
+html body .dashboard .module table,
+html body .dashboard .module table tbody,
+html body .dashboard .module table tr {
+  background: transparent !important;
+}
+
+/* Individual rows */
+html body .dashboard .module table tr {
+  background: rgba(11,31,58,0.85) !important;   /* same as My actions panel */
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* Row hover */
+html body .dashboard .module table tr:hover {
+  background: rgba(30,51,85,0.55) !important;
+}
+
+/* Text color */
+html body .dashboard .module table td,
+html body .dashboard .module table th {
+  color: var(--text) !important;
+}
+
+/* Add / Change links on right */
+html body .dashboard .module table td a {
+  color: var(--link) !important;
+}
+
+html body .dashboard .module table td a:hover {
+  color: var(--accent) !important;
+}
+
+/* =========================
+   FORCE REMOVE ALL WHITE TABLE ROWS
+========================= */
+
+/* Dashboard app rows */
+html body .app-list,
+html body .app-list table,
+html body .app-list table tr,
+html body .app-list table td {
+    background: rgba(11,31,58,0.85) !important;
+    color: var(--text) !important;
+}
+
+/* Remove Django alternating white rows */
+html body .row1,
+html body .row2 {
+    background: rgba(11,31,58,0.85) !important;
+}
+
+/* Change list page table */
+html body .change-list .results,
+html body .change-list .results table,
+html body .change-list .results table tr,
+html body .change-list .results table td {
+    background: rgba(11,31,58,0.85) !important;
+    color: var(--text) !important;
+}
+
+/* Remove default grey striping */
+html body table tr:nth-child(even),
+html body table tr:nth-child(odd) {
+    background: rgba(11,31,58,0.85) !important;
+}
+
+/* Hover */
+html body table tr:hover {
+    background: rgba(30,51,85,0.65) !important;
+}
+
+/* Ensure sidebar matches */
+html body #nav-sidebar .current-model,
+html body #nav-sidebar .current-model a {
+    background: rgba(11,31,58,0.85) !important;
+}

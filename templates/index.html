@@ -1,0 +1,122 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>FlingGolf Backend</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      margin: 0;
+      padding: 3rem;
+    }
+    .card {
+      max-width: 720px;
+      margin: auto;
+      background: #020617;
+      border-radius: 12px;
+      padding: 2rem 2.5rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,.4);
+    }
+  .app-download {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: #0b1220;
+    border-radius: 12px;
+  }
+  .app-download h2 {
+    margin-top: 0;
+    color: #4ade80;
+  }
+  .app-download p {
+    margin-bottom: 1rem;
+    opacity: 0.8;
+  }
+  img.qr {
+    width: 220px;
+    height: auto;
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto;
+  }
+    h1 {
+      margin-top: 0;
+      color: #38bdf8;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: .75rem 0;
+    }
+    a {
+      color: #22d3ee;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .ok {
+      color: #4ade80;
+      font-weight: 600;
+    }
+    footer {
+      margin-top: 2rem;
+      opacity: .6;
+      font-size: .85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🏌️ FlingGolf Backend</h1>
+
+    <p class="ok">Service is running</p>
+
+    <ul>
+      <li>🔐 <a href="/admin/">Admin</a></li>
+      <li>📘 <a href="/api/docs/">API Docs (Swagger)</a></li>
+      <li>📄 <a href="/api/redoc/">API Docs (ReDoc)</a></li>
+      <li>❤️ <a href="/api/health/">Health Check</a></li>
+    </ul>
+
+  <div class="app-download">
+  <h2>📱 Get the FlingGolf App</h2>
+
+  <div style="margin-bottom: 2rem;">
+    <h3 style="color:#4ade80;">Android</h3>
+    <p>Scan the QR code to install the Android preview build.</p>
+    <img class="qr" src="/static/app/qr-android.png" alt="Android QR Code">
+  </div>
+
+  <div>
+    <h3 style="color:#4ade80;">iPhone (TestFlight Beta)</h3>
+    <p>
+      FlingGolf is available on iOS via Apple TestFlight.
+      Install TestFlight from the App Store and use the invite link below.
+    </p>
+
+    <p style="text-align:center;">
+      <a href="YOUR_TESTFLIGHT_LINK_HERE"
+         style="display:inline-block;padding:12px 20px;background:#22d3ee;color:#0f172a;
+                border-radius:8px;font-weight:600;text-decoration:none;">
+        Join iOS Beta on TestFlight
+      </a>
+    </p>
+  </div>
+</div>
+
+
+
+     <footer>
+      Django · DRF · AWS · Docker
+    </footer>
+  </div>
+</body>
+</html>
