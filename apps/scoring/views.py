@@ -8,10 +8,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.http import Http404
 
+from apps.scoring.services.handicap import apply_handicap_updates_for_round
+
 from apps.scoring.models import Round, RoundHoleScore, RoundPlayer
 from apps.scoring.pagination import RoundPagination
 from apps.scoring.permissions import IsRoundOwner, IsRoundHoleScoreOwner
 
+from apps.scoring.models import HandicapHistory
+from apps.scoring.serializers import HandicapHistorySerializer
+
+from apps.scoring.models import Round, RoundHoleScore, RoundPlayer, HandicapHistory
 from apps.scoring.serializers import (
     RoundCreateSerializer,
     RoundDetailSerializer,
@@ -20,6 +26,7 @@ from apps.scoring.serializers import (
     RoundHoleScoreUpdateSerializer,
     RoundHoleScoreUpdateResponseSerializer,
     RoundListSerializer,
+    HandicapHistorySerializer,
 )
 
 
@@ -144,7 +151,6 @@ class RoundListCreateView(generics.ListCreateAPIView):
         )
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
-
 class RoundDetailView(generics.RetrieveAPIView):
     serializer_class = RoundDetailMobileSerializer
     permission_classes = [permissions.IsAuthenticated, IsRoundOwner]
@@ -164,7 +170,6 @@ class RoundDetailView(generics.RetrieveAPIView):
                 )
             )
         )
-
 
 class RoundHoleScoreUpdateView(generics.UpdateAPIView):
     serializer_class = RoundHoleScoreUpdateSerializer
@@ -231,7 +236,6 @@ class RoundHoleScoreUpdateView(generics.UpdateAPIView):
         )
         return Response(response_serializer.data)
 
-
 class RoundStatusActionView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -276,6 +280,8 @@ class RoundStatusActionView(APIView):
                 "updated_at",
             ]
         )
+        if action == "complete" and round_obj.is_qualifying and not round_obj.handicap_applied:
+            apply_handicap_updates_for_round(round_obj)
 
         round_obj = (
             Round.objects.filter(pk=round_obj.pk, created_by=request.user)
@@ -298,3 +304,12 @@ class RoundStatusActionView(APIView):
             context={"request": request},
         )
         return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+class HandicapHistoryListView(generics.ListAPIView):
+    serializer_class = HandicapHistorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return HandicapHistory.objects.filter(user=self.request.user).order_by(
+            "-effective_date", "-created_at"
+        )

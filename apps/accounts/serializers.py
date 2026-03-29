@@ -12,7 +12,7 @@ class RegisterSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     # Sprint 1 / MVP fields
-    display_name = serializers.CharField(max_length=120, required=False, allow_blank=True)
+    display_name = serializers.CharField(max_length=120, required=True, allow_blank=False)
     country = serializers.CharField(max_length=2, required=False, allow_blank=True)
 
     consent_accepted = serializers.BooleanField()
@@ -31,6 +31,12 @@ class RegisterSerializer(serializers.Serializer):
         if value is not True:
             raise serializers.ValidationError("Consent must be accepted to register.")
         return value
+    
+    def validate_display_name(self, value):
+        v = (value or "").strip()
+        if not v:
+            raise serializers.ValidationError("Display name is required.")
+        return v
 
 
     def create(self, validated_data):
@@ -49,7 +55,8 @@ class RegisterSerializer(serializers.Serializer):
 
         # profile is created by your signals.py; update it
         profile = user.profile
-        profile.display_name = validated_data.get("display_name", "")
+        profile.display_name = validated_data["display_name"].strip()
+
         profile.country = validated_data.get("country", "")
         if consent_accepted:
             profile.accept_consent()
@@ -96,13 +103,20 @@ class UpdateMeSerializer(serializers.Serializer):
     first_name = serializers.CharField(required=False, allow_blank=True, max_length=150)
     last_name = serializers.CharField(required=False, allow_blank=True, max_length=150)
 
-    display_name = serializers.CharField(required=False, allow_blank=True, max_length=120)
+    display_name = serializers.CharField(required=False, allow_blank=False, max_length=120)
+
     country = serializers.CharField(required=False, allow_blank=True, max_length=2)
 
     def validate_country(self, value: str):
         v = (value or "").strip().upper()
         if v and len(v) != 2:
             raise serializers.ValidationError("Country must be a 2-letter code (e.g. GB).")
+        return v
+    
+    def validate_display_name(self, value):
+        v = (value or "").strip()
+        if not v:
+            raise serializers.ValidationError("Display name cannot be blank.")
         return v
 
     def update(self, instance, validated_data):
@@ -122,8 +136,9 @@ class UpdateMeSerializer(serializers.Serializer):
         # --- Profile fields ---
         profile = getattr(instance, "profile", None)
         if profile is not None:
-            if "display_name" in validated_data:
-                profile.display_name = validated_data.get("display_name", "") or ""
+            if "display_name" in validated_data:             
+                profile.display_name = validated_data["display_name"].strip()
+
             if "country" in validated_data:
                 profile.country = validated_data.get("country", "") or ""
             profile.save()

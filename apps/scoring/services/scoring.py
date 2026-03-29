@@ -113,6 +113,7 @@ def create_round_with_players(
     name: str = "",
     scoring_format: str = Round.SCORING_STABLEFORD,
     status: str = Round.STATUS_DRAFT,
+    is_qualifying: bool = False,
     notes: str = "",
     allowance_percent: int = 100,
 ) -> Round:
@@ -151,12 +152,17 @@ def create_round_with_players(
         sss_value_snapshot=tee_set.sss_value,
         holes_count_snapshot=course.holes,
         notes=notes,
+        is_qualifying=is_qualifying,
     )
 
     for idx, player_input in enumerate(player_inputs, start=1):
         linked_user = None
         if player_input.user_id:
             linked_user = User.objects.filter(id=player_input.user_id).first()
+        elif created_by and idx == 1:
+            linked_user = created_by
+            
+            
 
         handicap_index = (
             player_input.handicap_index

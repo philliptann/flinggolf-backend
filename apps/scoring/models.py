@@ -85,6 +85,9 @@ class Round(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    is_qualifying = models.BooleanField(default=False)
+    handicap_applied = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-date_played", "-created_at"]
@@ -172,14 +175,55 @@ class RoundHoleScore(models.Model):
 
 
 class HandicapHistory(models.Model):
+    ADJUSTMENT_DECREASE = "decrease"
+    ADJUSTMENT_NO_CHANGE = "no_change"
+    ADJUSTMENT_INCREASE = "increase"
+
+    ADJUSTMENT_TYPE_CHOICES = [
+        (ADJUSTMENT_DECREASE, "Decrease"),
+        (ADJUSTMENT_NO_CHANGE, "No Change"),
+        (ADJUSTMENT_INCREASE, "Increase"),
+    ]
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="handicap_history",
     )
 
+    source_round = models.ForeignKey(
+        Round,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="handicap_updates",
+    )
+
+    old_exact_handicap = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    new_exact_handicap = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+
+    playing_handicap_used = models.IntegerField(null=True, blank=True)
+    gross_score = models.IntegerField(null=True, blank=True)
+    net_score = models.IntegerField(null=True, blank=True)
+    target_score = models.IntegerField(null=True, blank=True)
+    buffer_zone_used = models.IntegerField(default=2)
+    nett_differential = models.IntegerField(null=True, blank=True)
+
+    adjustment_value = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    adjustment_type = models.CharField(
+        max_length=20,
+        choices=ADJUSTMENT_TYPE_CHOICES,
+        null=True,
+        blank=True,
+    )
+
+    is_qualifying = models.BooleanField(default=True)
+    rule_version = models.CharField(max_length=50, default="legacy_v1")
+
     handicap_index = models.DecimalField(max_digits=5, decimal_places=2)
     effective_date = models.DateField()
+
+
 
     source = models.CharField(max_length=50, blank=True)
     notes = models.TextField(blank=True)

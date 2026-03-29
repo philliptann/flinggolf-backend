@@ -1,3 +1,4 @@
+# backend/apps/accounts/models.py
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
@@ -18,7 +19,7 @@ class UserProfile(models.Model):
     )
 
     # Basic profile
-    display_name = models.CharField(max_length=120, blank=True)
+    display_name = models.CharField(max_length=120)
     country = models.CharField(max_length=2, blank=True, help_text="ISO 3166-1 alpha-2, e.g. GB, IE")
 
     # Roles (simple MVP approach)

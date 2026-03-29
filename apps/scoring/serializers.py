@@ -3,9 +3,8 @@ from decimal import Decimal
 from rest_framework import serializers
 
 from apps.courses.models import Course, TeeSet
-from apps.scoring.models import Round, RoundHoleScore, RoundPlayer
 from apps.scoring.services.scoring import ( PlayerInput, create_round_with_players,  update_hole_score,)
-
+from apps.scoring.models import Round, RoundHoleScore, RoundPlayer, HandicapHistory
 
 class RoundSummaryMixin:
     def _players(self, obj):
@@ -38,16 +37,20 @@ class RoundSummaryMixin:
         scoring_format = obj.scoring_format
         if scoring_format == Round.SCORING_STABLEFORD:
             return "stableford_total"
-        if scoring_format == Round.SCORING_NET:
-            return "net_total"
+        if scoring_format == Round.SCORING_STROKEPLAY:
+            return "gross_total"
+        if scoring_format == Round.SCORING_MATCHPLAY:
+            return "gross_total"
         return "gross_total"
 
     def _leader_metric_label(self, obj):
         scoring_format = obj.scoring_format
         if scoring_format == Round.SCORING_STABLEFORD:
             return "stableford"
-        if scoring_format == Round.SCORING_NET:
-            return "net"
+        if scoring_format == Round.SCORING_STROKEPLAY:
+            return "gross"
+        if scoring_format == Round.SCORING_MATCHPLAY:
+            return "gross"
         return "gross"
 
     def _is_higher_better(self, obj):
@@ -464,6 +467,7 @@ class RoundCreateSerializer(serializers.Serializer):
         required=False,
         default=Round.SCORING_STABLEFORD,
     )
+    is_qualifying = serializers.BooleanField(required=False, default=False)
     notes = serializers.CharField(required=False, allow_blank=True)
     allowance_percent = serializers.IntegerField(required=False, default=100)
     players = RoundCreatePlayerSerializer(many=True)
@@ -541,6 +545,7 @@ class RoundCreateSerializer(serializers.Serializer):
             name=validated_data.get("name", ""),
             scoring_format=validated_data.get("scoring_format", Round.SCORING_STABLEFORD),
             status=Round.STATUS_DRAFT,
+            is_qualifying=validated_data.get("is_qualifying", False),
             notes=validated_data.get("notes", ""),
             allowance_percent=validated_data.get("allowance_percent", 100),
         )
@@ -565,3 +570,28 @@ class RoundHoleScoreUpdateSerializer(serializers.Serializer):
             adjusted_strokes=validated_data.get("adjusted_strokes"),
             mark_complete=validated_data.get("is_complete", True),
         )
+
+class HandicapHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HandicapHistory
+        fields = [
+            "id",
+            "handicap_index",
+            "effective_date",
+            "source",
+            "notes",
+            "old_exact_handicap",
+            "new_exact_handicap",
+            "playing_handicap_used",
+            "gross_score",
+            "net_score",
+            "target_score",
+            "buffer_zone_used",
+            "nett_differential",
+            "adjustment_value",
+            "adjustment_type",
+            "is_qualifying",
+            "rule_version",
+            "source_round",
+            "created_at",
+        ]
