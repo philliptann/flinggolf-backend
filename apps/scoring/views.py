@@ -1,34 +1,29 @@
 # backend/apps/scoring/views.py
 
 from django.db.models import Prefetch, Q
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import generics, status, permissions
+
+from rest_framework import generics, permissions, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.http import Http404
 
-from apps.scoring.services.handicap import apply_handicap_updates_for_round
-
-from apps.scoring.models import Round, RoundHoleScore, RoundPlayer
+#from apps.courses.models import Course, TeeSet
+from apps.scoring.models import HandicapHistory, Round, RoundHoleScore, RoundPlayer, Tournament
 from apps.scoring.pagination import RoundPagination
-from apps.scoring.permissions import IsRoundOwner, IsRoundHoleScoreOwner
-
-from apps.scoring.models import HandicapHistory
-from apps.scoring.serializers import HandicapHistorySerializer
-
-from apps.scoring.models import Round, RoundHoleScore, RoundPlayer, HandicapHistory
-from apps.scoring.serializers import (
-    RoundCreateSerializer,
-    RoundDetailSerializer,
-    RoundDetailMobileSerializer,
-    RoundHoleScoreSerializer,
-    RoundHoleScoreUpdateSerializer,
-    RoundHoleScoreUpdateResponseSerializer,
-    RoundListSerializer,
-    HandicapHistorySerializer,
+from apps.scoring.permissions import IsRoundHoleScoreOwner, IsRoundOwner
+from apps.scoring.serializers import (  HandicapHistorySerializer,  RoundCreateSerializer, RoundDetailMobileSerializer,
+    RoundHoleScoreUpdateResponseSerializer, RoundHoleScoreUpdateSerializer, RoundListSerializer,
+    TournamentCreateSerializer, TournamentJoinSerializer, TournamentSerializer,)
+from apps.scoring.services.handicap import apply_handicap_updates_for_round
+from apps.scoring.services.tournaments import (
+    create_tournament_with_host_round,
+    get_tournament_leaderboard,
+    join_tournament_and_create_round,
 )
-
 
 class RoundListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -313,3 +308,77 @@ class HandicapHistoryListView(generics.ListAPIView):
         return HandicapHistory.objects.filter(user=self.request.user).order_by(
             "-effective_date", "-created_at"
         )
+
+class TournamentCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = TournamentCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        tournament, round_obj = create_tournament_with_host_round(
+            user=request.user,
+            tournament_name=data["name"],
+            course=data["course"],
+            tee_set=data["tee_set"],
+            scoring_format=data["scoring_format"],
+            date_played=data["date_played"],
+            is_qualifying=data["is_qualifying"],
+        )
+
+        return Response({
+            "tournament": TournamentSerializer(tournament).data,
+            "round_id": round_obj.id,
+        }, status=status.HTTP_201_CREATED)
+
+class TournamentJoinView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = TournamentJoinSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            tournament, round_obj = join_tournament_and_create_round(
+                user=request.user,
+                join_code=serializer.validated_data["join_code"],
+            )
+        except Tournament.DoesNotExist:
+            return Response({"detail": "Tournament not found."}, status=404)
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=400)
+
+        return Response({
+            "tournament": TournamentSerializer(tournament).data,
+            "round_id": round_obj.id,
+        }, status=201)
+
+class TournamentDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        tournament = get_object_or_404(Tournament, pk=pk)
+
+        if not (
+            tournament.created_by_id == request.user.id
+            or tournament.entries.filter(user=request.user).exists()
+        ):
+            raise PermissionDenied("You do not have access to this tournament.")
+
+        return Response(TournamentSerializer(tournament).data)
+
+class TournamentLeaderboardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        tournament = get_object_or_404(Tournament, pk=pk)
+
+        if not (
+            tournament.created_by_id == request.user.id
+            or tournament.entries.filter(user=request.user).exists()
+        ):
+            raise PermissionDenied("You do not have access to this tournament.")
+
+        rows = get_tournament_leaderboard(tournament)
+        return Response(rows)

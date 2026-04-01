@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from apps.courses.models import Course, TeeSet
 from apps.scoring.services.scoring import ( PlayerInput, create_round_with_players,  update_hole_score,)
-from apps.scoring.models import Round, RoundHoleScore, RoundPlayer, HandicapHistory
+from apps.scoring.models import Round, RoundHoleScore, RoundPlayer, HandicapHistory, Tournament
 
 class RoundSummaryMixin:
     def _players(self, obj):
@@ -274,6 +274,7 @@ class RoundDetailMobileSerializer(RoundSummaryMixin, serializers.ModelSerializer
     players = serializers.SerializerMethodField()
     holes = serializers.SerializerMethodField()
     timestamps = serializers.SerializerMethodField()
+    tournament = serializers.SerializerMethodField()
 
     class Meta:
         model = Round
@@ -290,6 +291,7 @@ class RoundDetailMobileSerializer(RoundSummaryMixin, serializers.ModelSerializer
             "players",
             "holes",
             "timestamps",
+            "tournament",
         ]
 
     def get_course(self, obj):
@@ -382,6 +384,17 @@ class RoundDetailMobileSerializer(RoundSummaryMixin, serializers.ModelSerializer
         holes = list(scores_by_hole.values())
         holes.sort(key=lambda h: h["number"])
         return holes
+    
+    def get_tournament(self, obj):
+        if not obj.tournament_id:
+            return None
+
+        return {
+            "id": obj.tournament_id,
+            "name": obj.tournament.name,
+            "join_code": obj.tournament.join_code,
+            "status": obj.tournament.status,
+        }
 
     def get_timestamps(self, obj):
         return {
@@ -595,3 +608,68 @@ class HandicapHistorySerializer(serializers.ModelSerializer):
             "source_round",
             "created_at",
         ]
+    
+class TournamentCreateSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=120)
+    course_id = serializers.IntegerField()
+    tee_set_id = serializers.IntegerField()
+    scoring_format = serializers.ChoiceField(choices=[(Round.SCORING_STROKEPLAY, "Strokeplay"),(Round.SCORING_STABLEFORD, "Stableford"),]
+)
+    date_played = serializers.DateField()
+    is_qualifying = serializers.BooleanField(default=False)
+
+    def validate(self, attrs):
+        course_id = attrs["course_id"]
+        tee_set_id = attrs["tee_set_id"]
+
+        try:
+            course = Course.objects.get(id=course_id, is_active=True)
+        except Course.DoesNotExist:
+            raise serializers.ValidationError({"course_id": "Invalid course."})
+
+        try:
+            tee_set = TeeSet.objects.get(id=tee_set_id, is_active=True)
+        except TeeSet.DoesNotExist:
+            raise serializers.ValidationError({"tee_set_id": "Invalid tee set."})
+
+        if tee_set.course_id != course.id:
+            raise serializers.ValidationError(
+                {"tee_set_id": "Selected tee set does not belong to the selected course."}
+            )
+
+        attrs["course"] = course
+        attrs["tee_set"] = tee_set
+        return attrs
+
+class TournamentJoinSerializer(serializers.Serializer):
+    join_code = serializers.CharField(max_length=8)
+
+    def validate_join_code(self, value):
+        value = value.strip().upper()
+        if not value:
+            raise serializers.ValidationError("Join code is required.")
+        return value
+
+class TournamentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tournament
+        fields = [
+            "id",
+            "name",
+            "join_code",
+            "date_played",
+            "status",
+            "scoring_format",
+            "is_qualifying",
+            "created_at",
+            "updated_at",
+        ]
+
+class TournamentLeaderboardRowSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    display_name = serializers.CharField()
+    round_id = serializers.IntegerField()
+    round_status = serializers.CharField()
+    total_score = serializers.IntegerField(allow_null=True)
+    total_points = serializers.IntegerField(allow_null=True)
+    holes_completed = serializers.IntegerField()

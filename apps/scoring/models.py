@@ -66,6 +66,13 @@ class Round(models.Model):
         choices=SCORING_FORMAT_CHOICES,
         default=SCORING_STABLEFORD,
     )
+    tournament = models.ForeignKey(
+        "scoring.Tournament",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="rounds",
+    )
 
     # Snapshot key round metadata at round creation
     course_name_snapshot = models.CharField(max_length=200)
@@ -94,7 +101,6 @@ class Round(models.Model):
 
     def __str__(self):
         return self.name or f"{self.course_name_snapshot} - {self.date_played}"
-
 
 class RoundPlayer(models.Model):
     round = models.ForeignKey(
@@ -135,7 +141,6 @@ class RoundPlayer(models.Model):
     def __str__(self):
         return f"{self.display_name} - {self.round}"
 
-
 class RoundHoleScore(models.Model):
     round_player = models.ForeignKey(
         RoundPlayer,
@@ -172,7 +177,6 @@ class RoundHoleScore(models.Model):
 
     def __str__(self):
         return f"{self.round_player.display_name} - Hole {self.hole_number}"
-
 
 class HandicapHistory(models.Model):
     ADJUSTMENT_DECREASE = "decrease"
@@ -235,3 +239,89 @@ class HandicapHistory(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.handicap_index} ({self.effective_date})"
+
+class Tournament(models.Model):
+    STATUS_DRAFT = "draft"
+    STATUS_OPEN = "open"
+    STATUS_IN_PROGRESS = "in_progress"
+    STATUS_COMPLETED = "completed"
+    STATUS_CANCELLED = "cancelled"
+
+    STATUS_CHOICES = [
+        (STATUS_DRAFT, "Draft"),
+        (STATUS_OPEN, "Open"),
+        (STATUS_IN_PROGRESS, "In Progress"),
+        (STATUS_COMPLETED, "Completed"),
+        (STATUS_CANCELLED, "Cancelled"),
+    ]
+
+    name = models.CharField(max_length=120)
+    join_code = models.CharField(max_length=8, unique=True, db_index=True)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="created_tournaments",
+    )
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.PROTECT,
+        related_name="tournaments",
+    )
+    tee_set = models.ForeignKey(
+        TeeSet,
+        on_delete=models.PROTECT,
+        related_name="tournaments",
+    )
+
+    date_played = models.DateField()
+
+    scoring_format = models.CharField(
+        max_length=20,
+        choices=Round.SCORING_FORMAT_CHOICES,
+    )
+    is_qualifying = models.BooleanField(default=False)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_OPEN,
+    )
+
+    starts_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.join_code})"
+    
+class TournamentEntry(models.Model):
+    tournament = models.ForeignKey(
+        Tournament,
+        on_delete=models.CASCADE,
+        related_name="entries",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="tournament_entries",
+    )
+    round = models.OneToOneField(
+        "scoring.Round",
+        on_delete=models.CASCADE,
+        related_name="tournament_entry",
+    )
+
+    display_name_snapshot = models.CharField(max_length=120)
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [
+            ("tournament", "user"),
+        ]
+
+    def __str__(self):
+        return f"{self.display_name_snapshot} - {self.tournament.join_code}"
