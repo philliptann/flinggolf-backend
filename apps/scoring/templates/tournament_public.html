@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ tournament.name }} - FlingGolf</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="refresh" content="20">
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f9fafb;
+        margin: 0;
+        padding: 24px;
+        color: #111827;
+    }
+
+    .wrap {
+        max-width: 1300px;
+        margin: 0 auto;
+    }
+
+    .hero {
+        background: linear-gradient(135deg, #1d4ed8, #2563eb, #0f172a);
+        color: #ffffff;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    }
+
+    .hero h1 {
+        margin: 0 0 12px 0;
+        color: #ffffff;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .code {
+        display: inline-block;
+        background: rgba(255,255,255,0.18);
+        color: #ffffff;
+        font-weight: 700;
+        padding: 8px 12px;
+        border-radius: 999px;
+        margin-top: 8px;
+        border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    .meta {
+        margin-top: 12px;
+        color: rgba(255,255,255,0.9);
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(320px, 420px);
+        gap: 20px;
+        align-items: start;
+    }
+
+    .leaderboard-card {
+        min-width: 0;
+    }
+
+    .video-card {
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    }
+
+    .video-card h2 {
+        margin-top: 0;
+        margin-bottom: 12px;
+        font-size: 20px;
+    }
+
+    .video-card p {
+        margin-top: 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    }
+
+    th, td {
+        padding: 14px 12px;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+        background: #eff6ff;
+        color: #1e3a8a;
+        font-size: 14px;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    .leader {
+        font-weight: 700;
+    }
+
+    .muted {
+        color: #6b7280;
+    }
+
+    .status {
+        text-transform: capitalize;
+    }
+
+    iframe {
+        width: 100%;
+        height: 740px;
+        border: 0;
+        border-radius: 12px;
+        background: #000;
+    }
+
+    @media (max-width: 900px) {
+        .content-grid {
+        grid-template-columns: 1fr;
+        }
+
+        iframe {
+        height: 620px;
+        }
+    }
+    </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>{{ tournament.name }}</h1>
+      <div class="code">{{ tournament.join_code }}</div>
+      <div class="meta">
+        Date: {{ tournament.date_played }} |
+        Format: {{ tournament.scoring_format }} |
+        Status: {{ tournament.status }}
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <div class="leaderboard-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Pos</th>
+              <th>Player</th>
+              <th>Status</th>
+              <th>Holes Completed</th>
+              <th>Points</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in leaderboard %}
+              <tr>
+                <td class="{% if row.position == 1 %}leader{% endif %}">{{ row.position }}</td>
+                <td class="{% if row.position == 1 %}leader{% endif %}">{{ row.display_name }}</td>
+                <td class="status">{{ row.round_status }}</td>
+                <td>{{ row.holes_completed }}</td>
+                <td>{{ row.total_points|default:"-" }}</td>
+                <td>{{ row.total_score|default:"-" }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="muted">No players found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <aside class="video-card">
+        <h2>Watch FlingGolf</h2>
+        <p>Clubhouse promo video</p>
+        <iframe
+          src="https://www.tiktok.com/player/v1/7531120070559337741"
+          allowfullscreen
+        ></iframe>
+      </aside>
+    </div>
+  </div>
+</body>
+</html>

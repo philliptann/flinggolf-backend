@@ -4,7 +4,7 @@ from django.urls import path
 from .views import (
     HandicapHistoryListView, RoundDetailView, RoundHoleScoreUpdateView, RoundListCreateView,
     RoundStatusActionView, TournamentCreateView, TournamentDetailView, TournamentJoinView,
-    TournamentLeaderboardView,)
+    TournamentLeaderboardView, TournamentPublicPageView,)
 
 urlpatterns = [
     path("rounds/", RoundListCreateView.as_view(), name="round-list-create"),
@@ -18,4 +18,5 @@ urlpatterns = [
     path("tournaments/join/", TournamentJoinView.as_view(), name="tournament-join"),
     path("tournaments/<int:pk>/", TournamentDetailView.as_view(), name="tournament-detail"),
     path("tournaments/<int:pk>/leaderboard/", TournamentLeaderboardView.as_view(), name="tournament-leaderboard"),
+    path("tournament/<str:join_code>/", TournamentPublicPageView.as_view(),  name="tournament-public-page",),
 ]

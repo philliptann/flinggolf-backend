@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FlingGolf Tournament</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+      margin: 0;
+      padding: 24px;
+      color: #111827;
+    }
+    .wrap {
+      max-width: 520px;
+      margin: 80px auto;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    }
+    h1 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #4b5563;
+      margin-bottom: 18px;
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 16px;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 10px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .error {
+      color: #b91c1c;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .banner {
+        background: linear-gradient(135deg, #1d4ed8, #2563eb, #0f172a);
+        color: white;
+        padding: 28px 24px;
+        border-radius: 16px;
+        margin: 0 auto 24px auto;
+        max-width: 900px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+
+        .banner-inner {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        }
+
+        .banner-title {
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        }
+
+        .banner-subtitle {
+        font-size: 16px;
+        color: rgba(255,255,255,0.9);
+        }
+  </style>
+</head>
+<body>
+    <div class="banner">
+    <div class="banner-inner">
+        <div class="banner-title">FlingGolf</div>
+        <div class="banner-subtitle">Live Tournament Leaderboard</div>
+    </div>
+    </div>
+  <div class="wrap">
+    <div class="card">
+      <h1>View Tournament</h1>
+      <p>Enter your tournament code to view the live leaderboard.</p>
+
+      {% if error %}
+        <div class="error">{{ error }}</div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <input
+          type="text"
+          name="join_code"
+          placeholder="Enter code"
+          required
+        />
+        <button type="submit">View Tournament</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

@@ -2,8 +2,9 @@
 
 from django.db.models import Prefetch, Q
 from django.http import Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render,redirect
 from django.utils import timezone
+from django.views import View
 
 from rest_framework import generics, permissions, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -382,3 +383,39 @@ class TournamentLeaderboardView(APIView):
 
         rows = get_tournament_leaderboard(tournament)
         return Response(rows)
+
+class TournamentPublicPageView(View):
+    def get(self, request, join_code):
+        tournament = get_object_or_404(Tournament, join_code=join_code.upper())
+        leaderboard = get_tournament_leaderboard(tournament)
+
+        rows = []
+        for index, row in enumerate(leaderboard, start=1):
+            rows.append(
+                {
+                    "position": index,
+                    **row,
+                }
+            )
+
+        return render(request, "tournament_public.html",{
+                "tournament": tournament,
+                "leaderboard": rows,
+            },
+        )
+
+class TournamentLandingPageView(View):
+    def get(self, request):
+        return render(request, "tournament_landing.html")
+
+    def post(self, request):
+        join_code = (request.POST.get("join_code") or "").strip().upper()
+
+        if not join_code:
+            return render(
+                request,
+                "tournament_landing.html",
+                {"error": "Please enter a tournament code."},
+            )
+
+        return redirect("tournament-public-page", join_code=join_code)

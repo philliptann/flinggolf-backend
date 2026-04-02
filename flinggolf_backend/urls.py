@@ -2,15 +2,21 @@
 from django.contrib import admin
 from django.urls import path
 from django.urls import path, include
+from apps.core.views import index
+from apps.scoring.views import TournamentLandingPageView, TournamentPublicPageView
+
 #from drf_spectacular.views import (
    # SpectacularAPIView,
    # SpectacularSwaggerView,
    # SpectacularRedocView,
 #)
-from apps.core.views import index
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+
+    path("tournament/<str:join_code>/", TournamentPublicPageView.as_view(), name="tournament-public-page"),
+
+    path("tournament/", TournamentLandingPageView.as_view(), name="tournament-landing-page"),
     
     path("", index, name="index"),
 
