@@ -1,14 +1,20 @@
 # apps/scoring/services/tournaments.py
 import secrets
 from django.db import transaction
-
+import random
 from apps.scoring.models import Tournament, TournamentEntry
 from apps.scoring.services.scoring import PlayerInput, create_round_with_players
 
-JOIN_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ2346789"
+#JOIN_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ2346789"
 
-def generate_join_code(length: int = 6) -> str:
-    return "".join(secrets.choice(JOIN_CODE_ALPHABET) for _ in range(length))
+ADJECTIVES = ["nice", "happy", "blue", "quiet", "golden", "swift"]
+NOUNS = ["sunflower", "river", "falcon", "fairway", "meadow", "ocean"]
+
+#def generate_join_code(length: int = 6) -> str:
+#    return "".join(secrets.choice(JOIN_CODE_ALPHABET) for _ in range(length))
+
+def generate_join_code():
+    return f"{random.choice(ADJECTIVES)}-{random.choice(NOUNS)}-{random.randint(1, 99)}"
 
 def generate_unique_join_code(length: int = 6) -> str:
     from apps.scoring.models import Tournament
