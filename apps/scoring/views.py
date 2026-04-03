@@ -419,13 +419,7 @@ class TournamentLandingPageView(View):
         join_code = (request.POST.get("join_code") or "").strip().upper()
 
         if not join_code:
-            return render(
-                request,
-                "tournament_landing.html",
-                {
-                    "error": "Please enter a tournament code.",
-                },
-            )
+            return render(request,"tournament_landing.html", {"error": "Please enter a tournament code.", }, )
 
         if Tournament.objects.filter(join_code=join_code).exists():
             self._reset_attempts(request)
