@@ -136,7 +136,7 @@
         height: 620px;
         }
     }
-    </style>
+  </style>
 </head>
 <body>
   <div class="wrap">
@@ -147,6 +147,11 @@
         Date: {{ tournament.date_played }} |
         Format: {{ tournament.scoring_format }} |
         Status: {{ tournament.status }}
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2></h2>
+        <h2 style="margin:0;">Leaderboard</h2>
+        <small id="refresh-countdown" style="opacity:0.75;">Next update in 20s</small>
       </div>
     </div>
 
@@ -192,5 +197,25 @@
       </aside>
     </div>
   </div>
+  <script>
+    let countdown = 20;
+    const countdownEl = document.getElementById("refresh-countdown");
+
+    function updateCountdown() {
+      if (!countdownEl) return;
+
+      if (countdown <= 0) {
+        countdownEl.textContent = "Refreshing...";
+        window.location.reload();
+        return;
+      }
+
+      countdownEl.textContent = `Next update in ${countdown}s`;
+      countdown -= 1;
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
 </body>
 </html>
