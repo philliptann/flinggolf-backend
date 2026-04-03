@@ -416,7 +416,7 @@ class TournamentLandingPageView(View):
                 },
             )
 
-        join_code = (request.POST.get("join_code") or "").strip().upper()
+        join_code = (request.POST.get("join_code") or "").strip().lower()
 
         if not join_code:
             return render(request,"tournament_landing.html", {"error": "Please enter a tournament code.", }, )
@@ -472,7 +472,7 @@ class TournamentLandingPageView(View):
 
 class TournamentPublicPageView(View):
     def get(self, request, join_code):
-        tournament = Tournament.objects.filter(join_code=join_code.upper()).first()
+        tournament = Tournament.objects.filter(join_code=join_code.lower()).first()
 
         if not tournament:
             request.session["tournament_lookup_error"] = "Incorrect tournament code."

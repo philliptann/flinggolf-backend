@@ -642,10 +642,10 @@ class TournamentCreateSerializer(serializers.Serializer):
         return attrs
 
 class TournamentJoinSerializer(serializers.Serializer):
-    join_code = serializers.CharField(max_length=8)
+    join_code = serializers.CharField(max_length=40)
 
     def validate_join_code(self, value):
-        value = value.strip().upper()
+        value = value.strip().lower()
         if not value:
             raise serializers.ValidationError("Join code is required.")
         return value

@@ -256,7 +256,7 @@ class Tournament(models.Model):
     ]
 
     name = models.CharField(max_length=120)
-    join_code = models.CharField(max_length=8, unique=True, db_index=True)
+    join_code = models.CharField(max_length=40, unique=True, db_index=True)
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
