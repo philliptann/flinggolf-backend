@@ -14,10 +14,10 @@ from apps.scoring.views import TournamentLandingPageView, TournamentPublicPageVi
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    path("tournament/<str:join_code>/", TournamentPublicPageView.as_view(), name="tournament-public-page"),
-
     path("tournament/", TournamentLandingPageView.as_view(), name="tournament-landing-page"),
-    
+    path("tournament/<str:join_code>/", TournamentPublicPageView.as_view(), name="tournament-public-root-page"),
+
+
     path("", index, name="index"),
 
     #path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

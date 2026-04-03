@@ -21,10 +21,12 @@ from apps.scoring.serializers import (  HandicapHistorySerializer,  RoundCreateS
     TournamentCreateSerializer, TournamentJoinSerializer, TournamentSerializer,)
 from apps.scoring.services.handicap import apply_handicap_updates_for_round
 from apps.scoring.services.tournaments import (
-    create_tournament_with_host_round,
-    get_tournament_leaderboard,
-    join_tournament_and_create_round,
-)
+    create_tournament_with_host_round,  get_tournament_leaderboard,
+    join_tournament_and_create_round,)
+
+from datetime import timedelta
+
+
 
 class RoundListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -384,9 +386,104 @@ class TournamentLeaderboardView(APIView):
         rows = get_tournament_leaderboard(tournament)
         return Response(rows)
 
+class TournamentLandingPageView(View):
+    MAX_ATTEMPTS = 10
+    LOCKOUT_MINUTES = 2
+    SESSION_ATTEMPTS_KEY = "tournament_lookup_attempts"
+    SESSION_LOCKED_UNTIL_KEY = "tournament_lookup_locked_until"
+
+    def get(self, request):
+        locked_message = self._get_lock_message(request)
+        error = request.session.pop("tournament_lookup_error", None)
+
+        return render(
+            request,
+            "tournament_landing.html",
+            {
+                "error": error,
+                "locked_message": locked_message,
+            },
+        )
+
+    def post(self, request):
+        locked_message = self._get_lock_message(request)
+        if locked_message:
+            return render(
+                request,
+                "tournament_landing.html",
+                {
+                    "locked_message": locked_message,
+                },
+            )
+
+        join_code = (request.POST.get("join_code") or "").strip().upper()
+
+        if not join_code:
+            return render(
+                request,
+                "tournament_landing.html",
+                {
+                    "error": "Please enter a tournament code.",
+                },
+            )
+
+        if Tournament.objects.filter(join_code=join_code).exists():
+            self._reset_attempts(request)
+            return redirect("tournament-public-root-page", join_code=join_code)
+
+        attempts = request.session.get(self.SESSION_ATTEMPTS_KEY, 0) + 1
+        request.session[self.SESSION_ATTEMPTS_KEY] = attempts
+
+        if attempts >= self.MAX_ATTEMPTS:
+            locked_until = timezone.now() + timedelta(minutes=self.LOCKOUT_MINUTES)
+            request.session[self.SESSION_LOCKED_UNTIL_KEY] = locked_until.isoformat()
+            request.session["tournament_lookup_error"] = (
+                "Too many incorrect attempts. Please wait 2 minutes and try again."
+            )
+        else:
+            remaining = self.MAX_ATTEMPTS - attempts
+            request.session["tournament_lookup_error"] = (
+                f"Incorrect tournament code. {remaining} attempt(s) remaining."
+            )
+
+        return redirect("tournament-landing-page")
+
+    def _get_lock_message(self, request):
+        locked_until_raw = request.session.get(self.SESSION_LOCKED_UNTIL_KEY)
+        if not locked_until_raw:
+            return None
+
+        try:
+            locked_until = timezone.datetime.fromisoformat(locked_until_raw)
+            if timezone.is_naive(locked_until):
+                locked_until = timezone.make_aware(locked_until, timezone.get_current_timezone())
+        except Exception:
+            self._reset_attempts(request)
+            return None
+
+        now = timezone.now()
+        if now >= locked_until:
+            self._reset_attempts(request)
+            return None
+
+        seconds_left = int((locked_until - now).total_seconds())
+        minutes = seconds_left // 60
+        seconds = seconds_left % 60
+        return f"Too many incorrect attempts. Try again in {minutes}:{seconds:02d}."
+
+    def _reset_attempts(self, request):
+        request.session.pop(self.SESSION_ATTEMPTS_KEY, None)
+        request.session.pop(self.SESSION_LOCKED_UNTIL_KEY, None)
+
+
 class TournamentPublicPageView(View):
     def get(self, request, join_code):
-        tournament = get_object_or_404(Tournament, join_code=join_code.upper())
+        tournament = Tournament.objects.filter(join_code=join_code.upper()).first()
+
+        if not tournament:
+            request.session["tournament_lookup_error"] = "Incorrect tournament code."
+            return redirect("tournament-landing-page")
+
         leaderboard = get_tournament_leaderboard(tournament)
 
         rows = []
@@ -394,28 +491,16 @@ class TournamentPublicPageView(View):
             rows.append(
                 {
                     "position": index,
+                    "round_status_label": row["round_status"].replace("_", " ").title(),
                     **row,
                 }
             )
 
-        return render(request, "tournament_public.html",{
+        return render(
+            request,
+            "tournament_public.html",
+            {
                 "tournament": tournament,
                 "leaderboard": rows,
             },
         )
-
-class TournamentLandingPageView(View):
-    def get(self, request):
-        return render(request, "tournament_landing.html")
-
-    def post(self, request):
-        join_code = (request.POST.get("join_code") or "").strip().upper()
-
-        if not join_code:
-            return render(
-                request,
-                "tournament_landing.html",
-                {"error": "Please enter a tournament code."},
-            )
-
-        return redirect("tournament-public-page", join_code=join_code)

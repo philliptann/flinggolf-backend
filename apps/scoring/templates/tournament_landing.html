@@ -100,6 +100,10 @@
         <div class="error">{{ error }}</div>
       {% endif %}
 
+      {% if locked_message %}
+        <div class="error">{{ locked_message }}</div>
+      {% endif %}
+
       <form method="post">
         {% csrf_token %}
         <input
