@@ -485,7 +485,7 @@ class TournamentPublicPageView(View):
             rows.append(
                 {
                     "position": index,
-                    "round_status_label": row["round_status"].replace("_", " ").title(),
+                    "round_status_label": str(row.get("round_status", "")).replace("_", " ").title(),
                     **row,
                 }
             )

@@ -168,7 +168,7 @@
               <tr>
                 <td class="{% if row.position == 1 %}leader{% endif %}">{{ row.position }}</td>
                 <td class="{% if row.position == 1 %}leader{% endif %}">{{ row.display_name }}</td>
-                <td class="status">{{ row.round_status }}</td>
+                <td class="status">{{ row.round_status_label }}</td>
                 <td>{{ row.holes_completed }}</td>
                 <td>{{ row.total_points|default:"-" }}</td>
                 <td>{{ row.total_score|default:"-" }}</td>
