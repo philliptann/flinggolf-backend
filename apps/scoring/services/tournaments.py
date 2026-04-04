@@ -84,14 +84,14 @@ def create_tournament_with_host_round(
 @transaction.atomic
 def join_tournament_and_create_round(*, user, join_code, date_played=None):
     tournament = Tournament.objects.select_related("course", "tee_set").get(
-        join_code=join_code.upper()
+        join_code__iexact=join_code.strip()
     )
 
     if tournament.status in [Tournament.STATUS_COMPLETED, Tournament.STATUS_CANCELLED]:
         raise ValueError("This tournament is no longer open.")
 
     if TournamentEntry.objects.filter(tournament=tournament, user=user).exists():
-        raise ValueError("You have already joined this tournament.")
+        raise ValueError("You are already a member of this tournament.")
 
     profile = getattr(user, "profile", None)
     display_name = profile.display_name if profile and profile.display_name else user.username
